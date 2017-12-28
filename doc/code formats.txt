@@ -1,0 +1,17 @@
+Users: 8-16-8
+Emails: 8-8-8-8
+Companies: 4-8-4-8
+
+EmailVerificationHash: 32-32-32
+
+
+Employee:
+
+City: 6-6-8-6-6
+Provider: 8-4-8-4
+Warehouse: 16-16
+
+
+
+
+To1100cloud
