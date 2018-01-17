@@ -195,11 +195,34 @@ module.exports = class TransferModel {
 		let self = this;
 		let transaction = new Transaction();
 		return transaction.run(function*(){
+			let transfer = yield self.findOne({code: data.code});
+			if((transfer.status === "withdrawn") && (data.status !== "delayed")) {
+				let entryData = {
+					transactionsTypeName :"transfers",
+					description :"Por cancelación de transferencia",
+					entryDate : AppDate.now(),
+					transactions :[
+						{ 
+							code: transfer.code,
+							articles: transfer.articles.map(art=>{
+								return {
+									warehouseCode: transfer.originWarehouseCode,
+									code: art.code,
+									quantity: art.quantity,
+									remark: "Por Cancelación"
+								}
+							})
+						}
+					],
+
+				}
+				let insertedEntry = yield self.db.warehouseEntryTransfers.insertOne(entryData);	
+			}
 			let updated = yield transaction.update(self.model, {code: data.code}, {
 				status: data.status,
 				modifiedDate: AppDate.now()
 			});
-			return self.findOne({code: data.code});
+			return yield self.findOne({code: data.code});
 		});
 	}
 }
