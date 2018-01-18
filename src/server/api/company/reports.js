@@ -154,6 +154,8 @@ class WarehouseStock extends React.Component {
 				<td style={rowCenterStyle}>{i}</td>
 				<td style={rowLeftStyle}>{rart.clientCode}</td>
 				<td style={rowLeftStyle}>{rart.name}</td>
+				<td style={rowLeftStyle}>{rart.category}</td>
+				<td style={rowLeftStyle}>{rart.brand}</td>
 				<td style={rowCenterStyle}>{rart.totalEntry}</td>
 				<td style={rowCenterStyle}>{rart.totalOutlet}</td>
 				<td style={rowCenterStyle}>{rart.stock}</td>
@@ -184,6 +186,8 @@ class WarehouseStock extends React.Component {
 									<th style={{padding: '0.25rem'}}>No</th>
 									<th style={{padding: '0.25rem'}}>Cod.</th>
 									<th style={{padding: '0.25rem'}}>Artículo</th>
+									<th style={{padding: '0.25rem'}}>Categoria</th>
+									<th style={{padding: '0.25rem'}}>Marca</th>
 									<th style={{padding: '0.25rem'}}>Entradas</th>
 									<th style={{padding: '0.25rem'}}>Salidas</th>
 									<th style={{padding: '0.25rem'}}>Stock</th>
@@ -629,7 +633,7 @@ class Reports {
 		this.router = express.Router();
 
 		this.router.get('/articulos/stock/:article', this.articleStock.bind(this));
-		this.router.get('/almacenes/stock/:warehouse', this.warehouseStock.bind(this));
+		this.router.post('/almacenes/stock/:warehouse', this.warehouseStock.bind(this));
 
 		this.router.post('/transferencias/por-fecha', this.datedTransfers.bind(this));
 		this.router.get('/transferencias/detalle/:transfer', this.transferDetail.bind(this));
@@ -731,6 +735,22 @@ class Reports {
 		});
 	}
 
+	__ifMatch(filter, art) {
+		switch(filter.option)	{
+			case 'code' : 
+				return art.clientCode == filter.text; 
+			case 'name' :
+				return art.name == filter.text;
+			case 'brand' :
+				return art.brand == filter.text;
+			case 'category' :
+			    return art.category == filter.text;
+			case 'all' :
+				return true;
+			default : return false;
+		} 
+	}
+
 	warehouseStock(req, res) {
 		let self = this;
 		co(function*(){
@@ -740,22 +760,29 @@ class Reports {
 
 			let whep = yield req.app.db.warehouseEntryPurchases.findAll();
 			let whet = yield req.app.db.warehouseEntryTransfers.findAll();
+			//console.log("datos desde cliente", req.body);
 
 			if(whep.length){
 				for(let purchase of whep) {
 					for(let tran of purchase.transactions) {
 						for(let art of tran.articles) {
-							if(art.warehouseCode === wh.code){
+							if(art.warehouseCode === wh.code ) {
 								if(typeof debugArticles[art.code] == 'undefined'){
-									let farticle = yield req.app.db.articles.findOne({code: art.code}, 'clientCode name');
-									debugArticles[art.code] = {
-										clientCode: farticle.clientCode,
-										name: farticle.name,
-										totalEntry: art.quantity,
-										totalOutlet: 0,
+									let farticle = yield req.app.db.articles.findOne({code: art.code}, 'code name brand category clientCode');
+									if( (self.__ifMatch(req.body.filter,farticle)) ) {
+										debugArticles[art.code] = {
+											clientCode: farticle.clientCode,
+											name: farticle.name,
+											category: farticle.category,
+											brand: farticle.brand,
+											totalEntry: art.quantity,
+											totalOutlet: 0,
+										}
 									}
 								}else{
-									debugArticles[art.code].totalEntry += art.quantity;
+									if( self.__ifMatch(req.body.filter, debugArticles[art.code]) ) {
+										debugArticles[art.code].totalEntry += art.quantity;
+									}
 								}
 							}
 						}
@@ -768,16 +795,23 @@ class Reports {
 						for(let art of tran.articles) {
 							if(art.warehouseCode === wh.code){
 								if(typeof debugArticles[art.code] == 'undefined'){
-									let farticle = yield req.app.db.articles.findOne({code: art.code}, 'clientCode name');
-									debugArticles[art.code] = {
-										clientCode: farticle.clientCode,
-										name: farticle.name,
-										totalEntry: art.quantity,
-										totalOutlet: 0,
+									let farticle = yield req.app.db.articles.findOne({code: art.code}, 'code name brand category clientCode');
+									if( (self.__ifMatch(req.body.filter,farticle))) {
+										debugArticles[art.code] = {
+											clientCode: farticle.clientCode,
+											name: farticle.name,
+											category: farticle.category,
+											brand: farticle.brand,
+											totalEntry: art.quantity,
+											totalOutlet: 0,
+										}
 									}
 								}else{
-									debugArticles[art.code].totalEntry += art.quantity;
+									if( self.__ifMatch(req.body.filter, debugArticles[art.code]) ) {
+										debugArticles[art.code].totalEntry += art.quantity;
+									}
 								}
+								
 							}
 						}
 					}
@@ -792,15 +826,21 @@ class Reports {
 						for(let art of tran.articles) {
 							if(art.warehouseCode === wh.code){
 								if(typeof debugArticles[art.code] == 'undefined'){
-									let farticle = yield req.app.db.articles.findOne({code: art.code}, 'clientCode name');
-									debugArticles[art.code] = {
-										clientCode: farticle.clientCode,
-										name: farticle.name,
-										totalEntry: 0,
-										totalOutlet: art.quantity,
+									let farticle = yield req.app.db.articles.findOne({code: art.code}, 'code name brand category clientCode');
+									if( (self.__ifMatch(req.body.filter,farticle)) ) {
+										debugArticles[art.code] = {
+											clientCode: farticle.clientCode,
+											name: farticle.name,
+											category: farticle.category,
+											brand: farticle.brand,
+											totalEntry: 0,
+											totalOutlet: art.quantity,
+										}
 									}
-								}else{
-									debugArticles[art.code].totalOutlet += art.quantity;
+								} else {
+									if( self.__ifMatch(req.body.filter, debugArticles[art.code]) ) {
+										debugArticles[art.code].totalOutlet += art.quantity;
+									}
 								}
 							}
 						}
@@ -810,16 +850,22 @@ class Reports {
 
 			for(let art of wh.articles) {
 				if(typeof debugArticles[art.code] === 'undefined'){
-					let farticle = yield req.app.db.articles.findOne({code: art.code}, 'clientCode name');
-					debugArticles[art.code] = {
-						clientCode: farticle.clientCode,
-						name: farticle.name,
-						totalEntry: 0,
-						totalOutlet: 0,
-						stock: art.stock
+					let farticle = yield req.app.db.articles.findOne({code: art.code}, 'code name brand category clientCode');
+					if( (self.__ifMatch(req.body.filter, farticle)) ) {
+						debugArticles[art.code] = {
+							clientCode: farticle.clientCode,
+							name: farticle.name,
+							category: farticle.category,
+							brand: farticle.brand,
+							totalEntry: 0,
+							totalOutlet: 0,
+							stock: art.stock
+						}
 					}
 				}else{
-					debugArticles[art.code].stock = art.stock;
+					if( self.__ifMatch(req.body.filter, debugArticles[art.code]) ) {
+						debugArticles[art.code].stock = art.stock;
+					}
 				}
 			}
 
@@ -842,7 +888,7 @@ class Reports {
 
 			dbreport.htmlResult = html;
 			dbreport.save();
-
+			console.log("FINISH");
 			return yield self.buildPdfReport(html);
 		}).then(pdf=>{
 			res.json({pdf});
