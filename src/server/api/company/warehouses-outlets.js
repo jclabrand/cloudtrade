@@ -49,10 +49,11 @@ class WarehousesOutlets {
 
 	findOne(req, res) {
 		co(function*(){
-			let baseOutlet = yield req.app.db.warehouseOutlets.findOne({code: req.params.outlet});
+			let baseOutlet = yield req.app.db.warehouseOutlets.findOne({code: req.params.outlet}),
+				outlet;
 			switch(baseOutlet.transactionsTypeName){
 				case 'transfers':
-					let outlet = yield req.app.db.warehouseOutletTransfers.findOne({code: req.params.outlet});
+					outlet = yield req.app.db.warehouseOutletTransfers.findOne({code: req.params.outlet});
 					return {
 						code: outlet.code,
 						transactionsTypeName: baseOutlet.transactionsTypeName,
@@ -62,6 +63,19 @@ class WarehousesOutlets {
 						creationDate: outlet.creationDate,
 						modifiedDate: outlet.modifiedDate
 					};
+
+				case 'custom':
+					outlet = yield req.app.db.warehouseOutletCustom.findOne({code: req.params.outlet}, null, baseOutlet);
+					return {
+						code: outlet.code,
+						transactionsTypeName: baseOutlet.transactionsTypeName,
+						description: baseOutlet.description,
+						outletDate: baseOutlet.outletDate,
+						transactions: outlet.modTransactions,
+						creationDate: outlet.creationDate,
+						modifiedDate: outlet.modifiedDate
+					};
+
 				default:
 					throw 'No se reconoce el tipo de transacción en salida de almacén';
 			}
@@ -76,10 +90,11 @@ class WarehousesOutlets {
 		co(function*(){
 			switch(req.body.transactionsTypeName){
 				case 'transfers':
-					return yield req.app.db.warehouseOutletTransfers.insertOne(req.body); 
-					break;
+					return yield req.app.db.warehouseOutletTransfers.insertOne(req.body);
+
 				case 'custom':
-					break
+					return yield req.app.db.warehouseOutletCustom.insertOne(req.body);
+
 				default:
 					throw 'No se reconoce el tipo de transacción';
 			}

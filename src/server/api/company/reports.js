@@ -835,9 +835,9 @@ class Reports {
 
 			let whep = yield req.app.db.warehouseEntryPurchases.findAll();
 			let whet = yield req.app.db.warehouseEntryTransfers.findAll();
-			//console.log("datos desde cliente", req.body);
+			let whec = yield req.app.db.warehouseEntryCustom.findAll();
 
-			if(whep.length){
+			if(whep.length) {
 				for(let purchase of whep) {
 					for(let tran of purchase.transactions) {
 						for(let art of tran.articles) {
@@ -864,14 +864,14 @@ class Reports {
 					}
 				}
 			}
-			if(whet.length){
+			if(whet.length) {
 				for(let transfer of whet) {
 					for(let tran of transfer.transactions) {
 						for(let art of tran.articles) {
 							if(art.warehouseCode === wh.code){
 								if(typeof debugArticles[art.code] == 'undefined'){
 									let farticle = yield req.app.db.articles.findOne({code: art.code}, 'code name brand category clientCode');
-									if( (self.__ifMatch(req.body.filter,farticle))) {
+									if((self.__ifMatch(req.body.filter,farticle))) {
 										debugArticles[art.code] = {
 											clientCode: farticle.clientCode,
 											name: farticle.name,
@@ -882,7 +882,7 @@ class Reports {
 										}
 									}
 								}else{
-									if( self.__ifMatch(req.body.filter, debugArticles[art.code]) ) {
+									if(self.__ifMatch(req.body.filter, debugArticles[art.code])) {
 										debugArticles[art.code].totalEntry += art.quantity;
 									}
 								}
@@ -892,10 +892,37 @@ class Reports {
 					}
 				}
 			}
+			if(whec.length) {
+				for(let custom of whec) {
+					for(let art of custom.articles) {
+						if(art.warehouseCode === wh.code) {
+							if(typeof debugArticles[art.code] == 'undefined'){
+								let farticle = yield req.app.db.articles.findOne({code: art.code}, 'code name brand category clientCode');
+								if((self.__ifMatch(req.body.filter, farticle))) {
+									debugArticles[art.code] = {
+										clientCode: farticle.clientCode,
+										name: farticle.name,
+										category: farticle.category,
+										brand: farticle.brand,
+										totalEntry: art.quantity,
+										totalOutlet: 0,
+									}
+								}
+							}else{
+								if(self.__ifMatch(req.body.filter, debugArticles[art.code])) {
+									debugArticles[art.code].totalEntry += art.quantity;
+								}
+							}
+						}
+					}
+				}
+			}
+
 
 			let whot = yield req.app.db.warehouseOutletTransfers.findAll();
+			let whoc = yield req.app.db.warehouseOutletCustom.findAll();
 
-			if(whot.length){
+			if(whot.length) {
 				for(let transfer of whot) {
 					for(let tran of transfer.transactions) {
 						for(let art of tran.articles) {
@@ -922,6 +949,33 @@ class Reports {
 					}
 				}
 			}
+
+			if(whoc.length) {
+				for(let custom of whec) {
+					for(let art of custom.articles) {
+						if(art.warehouseCode === wh.code) {
+							if(typeof debugArticles[art.code] == 'undefined'){
+								let farticle = yield req.app.db.articles.findOne({code: art.code}, 'code name brand category clientCode');
+								if( (self.__ifMatch(req.body.filter,farticle)) ) {
+									debugArticles[art.code] = {
+										clientCode: farticle.clientCode,
+										name: farticle.name,
+										category: farticle.category,
+										brand: farticle.brand,
+										totalEntry: 0,
+										totalOutlet: art.quantity,
+									}
+								}
+							} else {
+								if( self.__ifMatch(req.body.filter, debugArticles[art.code]) ) {
+									debugArticles[art.code].totalOutlet += art.quantity;
+								}
+							}
+						}
+					}
+				}
+			}
+
 
 			for(let art of wh.articles) {
 				if(typeof debugArticles[art.code] === 'undefined'){

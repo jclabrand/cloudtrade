@@ -90,6 +90,9 @@ class WarehousesEntries {
 				case 'transfers':
 					entry = yield req.app.db.warehouseEntryTransfers.findOne({code: req.params.entry});
 					break;
+				case 'custom':
+					entry = yield req.app.db.warehouseEntryCustom.findOne({code: req.params.entry}, null, baseEntry);
+					break;
 				default:
 					throw 'No se reconoce el tipo de transacción';
 			}
@@ -117,6 +120,7 @@ class WarehousesEntries {
 				case 'transfers':
 					return yield req.app.db.warehouseEntryTransfers.insertOne(req.body);
 				case 'custom':
+					return yield req.app.db.warehouseEntryCustom.insertOne(req.body);
 					break;
 					
 				default:
@@ -127,9 +131,6 @@ class WarehousesEntries {
 		}).catch((err)=>{
 			res.sendError(err);
 		});
-
-		/*console.log(req.body);
-		res.json({entry: req.body});*/
 	}
 }
 
