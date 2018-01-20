@@ -205,4 +205,27 @@ module.exports = class ArticleModel {
 			return self.findOne(where);
 		});
 	}
+
+	existencesArticle(req) {
+		let self = this;
+		//let x = req.code;
+		return co(function*(){
+			let debugWarehouses = {};
+			let whs = yield self.db.warehouses.findAll('code clientCode name articles');
+			if(whs.length) {
+				for(let wh of whs) {
+					let fart = wh.articles.find(iart=>{ return iart.code === req.code});
+					if(fart) {
+						debugWarehouses[wh.code]={
+							clientCode: wh.clientCode,
+							name: wh.name,
+							stock: fart.stock,
+						}
+					}
+				}
+			}
+			console.log(debugWarehouses);
+			return debugWarehouses;
+		});
+	}
 }

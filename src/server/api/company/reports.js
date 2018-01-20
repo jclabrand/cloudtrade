@@ -243,38 +243,38 @@ class DatedTransfers extends React.Component {
 						</tr>
 					</tbody>
 				</table>
-					<table style={{width: '100%', fontSize: '9pt', borderTop: '0.1rem solid gray', borderBottom: '0.1rem solid gray'}}>
-						<thead>
-							<tr>
-								<th style={{padding: '0.25rem'}}>No</th>
-								<th style={{padding: '0.25rem'}}>Cod.</th>
-								<th style={{padding: '0.25rem'}}>Nombre del artículo</th>
-								<th style={{padding: '0.25rem'}}>Observación</th>
-								<th style={{padding: '0.25rem'}}>Cantidad</th>
-								<th style={{padding: '0.25rem'}}>P. Unit</th>
-								<th style={{padding: '0.25rem'}}>Total</th>
-							</tr>
-						</thead>
-						<tbody>
-							{
-								rtrf.articles.map((article, i)=>{
-									return (
-									<tr key={i}>
-										<td style={rowCenterStyle}>{i}</td>
-										<td style={rowLeftStyle}>{article.clientCode}</td>
-										<td style={rowLeftStyle}>{article.name}</td>
-										<td style={rowLeftStyle}>{article.remark}</td>
-										<td style={rowCenterStyle}>{article.quantity}</td>
-										<td style={rowCenterStyle}>{article.unitPrice}</td>
-										<td style={rowCenterStyle}>{article.total}</td>
-									</tr>)
-								})
-							}
-						</tbody>
-					</table>
+				<table style={{width: '100%', fontSize: '9pt', borderTop: '0.1rem solid gray', borderBottom: '0.1rem solid gray'}}>
+					<thead>
+						<tr>
+							<th style={{padding: '0.25rem'}}>No</th>
+							<th style={{padding: '0.25rem'}}>Cod.</th>
+							<th style={{padding: '0.25rem'}}>Nombre del artículo</th>
+							<th style={{padding: '0.25rem'}}>Observación</th>
+							<th style={{padding: '0.25rem'}}>Cantidad</th>
+							<th style={{padding: '0.25rem'}}>P. Unit</th>
+							<th style={{padding: '0.25rem'}}>Total</th>
+						</tr>
+					</thead>
+					<tbody>
+						{
+							rtrf.articles.map((article, i)=>{
+								return (
+								<tr key={i}>
+									<td style={rowCenterStyle}>{i}</td>
+									<td style={rowLeftStyle}>{article.clientCode}</td>
+									<td style={rowLeftStyle}>{article.name}</td>
+									<td style={rowLeftStyle}>{article.remark}</td>
+									<td style={rowCenterStyle}>{article.quantity}</td>
+									<td style={rowCenterStyle}>{article.unitPrice}</td>
+									<td style={rowCenterStyle}>{article.total}</td>
+								</tr>)
+							})
+						}
+					</tbody>
+				</table>
 
-					<h5 style={{margin: '0.5rem 0 1rem 0'}}>{'Subtotal artículos: ' + rtrf.totalArticles}</h5>
-				</div>
+				<h5 style={{margin: '0.5rem 0 1rem 0'}}>{'Subtotal artículos: ' + rtrf.totalArticles}</h5>
+			</div>
 			);
 		}
 
@@ -626,6 +626,78 @@ class PurchaseDetail extends React.Component {
 	}
 }
 
+class DatedEntries extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	render() {
+		let entries = [], i=0, totalArticles = 0,
+		rowCenterStyle = { textAlign: 'center', padding: '0.2rem' },
+		rowLeftStyle = { padding: '0.2rem' };
+
+		entries.push(
+			<table style={{width: '100%', fontSize: '9pt', borderTop: '0.1rem solid gray', borderBottom: '0.1rem solid gray'}}>
+				<thead>
+					<tr>
+						<th style={{padding: '0.25rem'}}>No</th>
+						<th style={{padding: '0.25rem'}}>Cod.</th>
+						<th style={{padding: '0.25rem'}}>Concepto</th>
+						<th style={{padding: '0.25rem'}}>Descripción</th>
+						<th style={{padding: '0.25rem'}}>Fecha de Entrada</th>
+						<th style={{padding: '0.25rem'}}>P. Unit</th>
+						<th style={{padding: '0.25rem'}}>Total</th>
+					</tr>
+				</thead>
+			</table>
+		)
+		
+		for (var ent in this.props.entries) {
+			let rent = this.props.entries[ent];
+			//totalArticles += rtrf.totalArticles;
+			entries.push(
+			<div key={i++}>	
+					<tbody>
+						<tr key={i}>
+							<td style={rowCenterStyle}>{i}</td>
+							<td style={rowLeftStyle}>{}</td>
+							<td style={rowLeftStyle}>{rent.transactionsTypeName}</td>
+							<td style={rowLeftStyle}>{rent.description}</td>
+							<td style={rowCenterStyle}>{rent.entryDate}</td>
+							<td style={rowCenterStyle}>{}</td>
+							<td style={rowCenterStyle}>{}</td>
+						</tr>
+					</tbody>
+			</div>	
+			);
+		}
+		return(
+			<html>
+			<body >
+				<header>
+					<ReportHeader company={this.props.company} report={this.props.report}/>
+				</header>
+				<main>
+					<div id="pageContent" style={{zoom: '0.67', padding:'0'}}>
+
+						<h3 style={{textAlign: 'center', fontSize: '12pt'}}>Reporte de Entradas a almacén</h3>
+						<h5 style={{fontSize: '9pt', margin: '1rem 0'}}>
+							{'Del '+this.props.startDate+' al '+this.props.endDate}
+						</h5>
+						{entries}
+						<h4 style={{margin: '1rem 0 0 0'}}>{'Total artículos: ' + totalArticles}</h4>
+					</div>
+				</main>
+				<footer>
+					<ReportFooter report={this.props.report}/>
+				</footer>
+			</body>
+		</html>
+		);
+	}
+}
+
+
 /****************************************************************************************/
 
 class Reports {
@@ -640,6 +712,9 @@ class Reports {
 
 		this.router.post('/compras/por-fecha', this.datedPurchases.bind(this));
 		this.router.get('/compras/detalle/:purchase', this.purchaseDetail.bind(this));
+
+		this.router.post('/entries/por-fecha', this.datedEntries.bind(this));
+		this.router.post('/outlets/por-fecha', this.datedOutlets.bind(this));
 	}
 
 	/************************************************************************************/
@@ -1195,6 +1270,93 @@ class Reports {
 			dbreport.save();
 
 			return yield self.buildPdfReport(html);
+		}).then(pdf=>{
+			res.json({pdf});
+		}).catch(err=>{
+			res.sendError(err);
+		});
+	}
+
+	datedEntries(req, res) {
+		let self = this;
+		co(function*(){
+			var d1 = AppDate.parse(req.body.startDate);
+			var d2 = AppDate.parse(req.body.endDate);
+
+			if(d1 > d2) {
+				throw 'No permitido: la fecha de inicio debe ser menor a la fecha fin.';
+			}
+			let debugEntries = {}
+			let entries = yield req.app.db.warehouseEntries.findAll();
+			//console.log("REQ BODY------------",req.body);
+			if(entries.length){
+				for(let ent of entries) {
+					//console.log("ent-------------",ent);
+					let entDate = AppDate.parse(ent.entryDate.split(' ')[0]);
+					if((entDate >= d1) && (entDate <= d2)){
+						
+						let entriesPurchases = yield req.app.db.warehouseEntryPurchases.findOne({code: ent.code});
+						//let entriesTransfers = yield req.app.db.warehouseEntryTransfers.findOne({code: ent.code});
+						console.log("PURCHASES-------",entriesPurchases);
+						//console.log("TRANSFERS-------",entriesTransfers);
+						debugEntries[ent.code] = {
+							transactionsTypeName:ent.transactionsTypeName,
+							description:ent.description,
+							entryDate:ent.entryDate,
+							DatecreationDate:ent.DatecreationDate,
+							articles:[]
+						}
+
+						/*for(let entpr of entriesPurchases) {
+							for (let tran of entpr) {
+								for (let art of tran){
+									debugEntries[ent.code].articles.push({	
+										x:art.quantity
+									});
+								}
+							}
+						}*/
+
+					} 
+				}
+			}
+
+			let company = {
+				name: req.company.name,
+				address: 'German Bush N 738',
+				phone: '8598565',
+				logoUrl: 'http://localhost:2000/images/tabletec-logo-128x68.png'
+			}
+
+			let report = {
+				name: 'NOMBRE',
+				clientCode: 'RP-TT-' + 'CLIENT CODE',
+				creationDate: 'FECHA CREACION'
+			}
+
+			var html = renderToString(<DatedEntries company={company} report={report} entries={debugEntries}
+				startDate={req.body.startDate} endDate={req.body.endDate}/>);
+
+			return yield self.buildPdfReport(html);				
+		}).then(pdf=>{
+			res.json({pdf});
+		}).catch(err=>{
+			res.sendError(err);
+		});
+	}
+
+	datedOutlets(req, res) {
+		let self = this;
+		co(function*(){
+			var d1 = AppDate.parse(req.body.startDate);
+			var d2 = AppDate.parse(req.body.endDate);
+
+			if(d1 > d2) {
+				throw 'No permitido: la fecha de inicio debe ser menor a la fecha fin.';
+			}
+			let debugPurchases = {}
+
+
 		}).then(pdf=>{
 			res.json({pdf});
 		}).catch(err=>{
