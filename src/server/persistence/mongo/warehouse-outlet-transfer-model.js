@@ -156,12 +156,18 @@ module.exports = class WarehouseOutletTransferModel {
 					let warehouse = yield self.db.warehouses.findOne({code: trArticle.warehouseCode}, 'code articles');
 					if(!warehouse){ throw 'Referencia a almacén perdida'; }
 
+					let dbArticle = yield self.db.articles.findOne({code: trArticle.code}, 'code name');
+					if(!dbArticle){ throw 'Referencia a artículo perdida'; }
+
 					let whArticle = warehouse.articles.find(whArticle=>{ return whArticle.code === trArticle.code });
 					if(whArticle){
-						let calcStock = whArticle.stock - trArticle.quantity;
-						whArticle.stock = (calcStock > 0) ? calcStock : 0;
+						if(whArticle.stock >= trArticle.quantity) {
+							whArticle.stock = whArticle.stock - trArticle.quantity;
+						} else {
+							throw 'Catidad excedida para el artículo ' + dbArticle.name + ', el stock en almacén es ' + whArticle.stock;
+						}
 					}else{
-						warehouse.articles.push({code: trArticle.code, stock: 0})
+						throw 'El almacén ' + warehouse.name + ' no tiene el artículo ' + dbArticle.name + ' en stock';
 					}
 
 					yield transaction.update(self.db.warehouses.model, {code: trArticle.warehouseCode}, {

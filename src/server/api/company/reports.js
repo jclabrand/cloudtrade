@@ -951,7 +951,7 @@ class Reports {
 			}
 
 			if(whoc.length) {
-				for(let custom of whec) {
+				for(let custom of whoc) {
 					for(let art of custom.articles) {
 						if(art.warehouseCode === wh.code) {
 							if(typeof debugArticles[art.code] == 'undefined'){

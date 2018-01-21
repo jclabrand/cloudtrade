@@ -107,7 +107,7 @@ module.exports = class WarehouseOutletCustomModel {
 					if(!warehouse){ throw 'Referencia a almacén perdida'; }
 
 					let dbArticle = yield self.db.articles.findOne({code: trArticle.code}, 'code name');
-					if(!warehouse){ throw 'Referencia a artículo perdida'; }
+					if(!dbArticle){ throw 'Referencia a artículo perdida'; }
 
 					let whArticle = warehouse.articles.find(whArticle=>{ return whArticle.code === trArticle.code });
 					if(whArticle) {
