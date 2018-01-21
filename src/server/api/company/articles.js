@@ -64,7 +64,7 @@ class Articles {
 		co(function*(){
 			let article = yield req.app.db.articles.findOne({code: req.params.article});
 			let encImages = yield self.enc(article.modImages);
-			let existenceX = yield req.app.db.articles.existencesArticle({code: req.params.article});
+			let existences = yield req.app.db.articles.existencesArticle({code: req.params.article});
 			return {
 				code: article.code,
 				clientCode: article.clientCode,
@@ -78,9 +78,7 @@ class Articles {
 				prices: article.prices,
 				creationDate: article.creationDate,
 				modifiedDate: article.modifiedDate,
-				existences: existenceX 
-			
-				
+				existences: existences
 			};
 		}).then(article=>{
 			res.json({article});

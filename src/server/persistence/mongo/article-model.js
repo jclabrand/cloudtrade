@@ -208,7 +208,6 @@ module.exports = class ArticleModel {
 
 	existencesArticle(req) {
 		let self = this;
-		//let x = req.code;
 		return co(function*(){
 			let debugWarehouses = {};
 			let whs = yield self.db.warehouses.findAll('code clientCode name articles');
@@ -224,7 +223,6 @@ module.exports = class ArticleModel {
 					}
 				}
 			}
-			console.log(debugWarehouses);
 			return debugWarehouses;
 		});
 	}
